@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>원자력 시민 공론장</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif; background: #fffaf6; color: #4e342e; font-size: 14px; }
+  button { font-family: inherit; cursor: pointer; }
+  textarea { font-family: inherit; }
+
+  /* Nav */
+  .nav { display: flex; gap: 5px; background: #fff; border-radius: 12px; padding: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); border: 1.5px solid #ffe0b2; margin-bottom: 18px; }
+  .nav-btn { flex: 1; padding: 9px 4px; border-radius: 9px; border: none; background: transparent; color: #a1887f; font-weight: 500; font-size: 13px; transition: all 0.2s; }
+  .nav-btn.active { background: #ff7043; color: #fff; font-weight: 700; }
+  .nav-btn:hover:not(.active) { background: #fff3e0; }
+  .nav-settings { padding: 9px 12px; border-radius: 9px; border: 1.5px solid #f5e6dc; background: #fff; color: #a1887f; font-size: 13px; }
+
+  /* Cards */
+  .card { background: #fff; border-radius: 14px; border: 2px solid #ffe0b2; padding: 16px 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .card-title { font-weight: 700; color: #5d4037; font-size: 13px; margin-bottom: 12px; }
+
+  /* Chip buttons */
+  .chip { padding: 6px 12px; border-radius: 20px; border: 2px solid #f5e6dc; background: #fff; color: #8d6e63; font-size: 12px; }
+  .chip.active { border-color: #ff7043; background: #fff3e0; color: #bf360c; font-weight: 700; }
+  .chip:hover:not(.active) { border-color: #ffb74d; }
+
+  /* Textarea */
+  .ta { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #f5e6dc; font-size: 13px; color: #4e342e; resize: vertical; outline: none; background: #fffaf6; line-height: 1.7; }
+  .ta:focus { border-color: #ff7043; }
+
+  /* Primary button */
+  .btn-primary { width: 100%; padding: 13px; border-radius: 12px; border: none; background: linear-gradient(90deg,#ff7043,#ff8a65); color: #fff; font-weight: 700; font-size: 14px; margin-top: 12px; transition: opacity 0.2s; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary:hover:not(:disabled) { opacity: 0.92; }
+
+  /* Secondary button */
+  .btn-sec { padding: 11px; border-radius: 10px; border: 2px solid #e0d5cc; background: #fff; color: #a1887f; font-weight: 600; font-size: 13px; }
+
+  /* Bars */
+  .bar-wrap { margin-bottom: 10px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 12px; color: #5d4037; margin-bottom: 4px; }
+  .bar-track { background: #f5ece6; border-radius: 6px; height: 10px; overflow: hidden; }
+  .bar-fill { height: 10px; border-radius: 6px; transition: width 0.7s ease; }
+
+  /* Tags */
+  .tag { background: #ff7043; color: #fff; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+  .tag-outline { background: #fff3e0; border: 2px solid #ff7043; border-radius: 20px; padding: 4px 12px; font-size: 12px; color: #bf360c; font-weight: 700; }
+
+  /* Step indicator */
+  .steps { display: flex; justify-content: center; gap: 6px; align-items: center; margin-bottom: 20px; }
+  .step-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 12px; }
+  .step-line { width: 16px; height: 2px; }
+
+  /* Topic list */
+  .topic-item { background: #fff; border: 2px solid #f5e6dc; border-radius: 14px; padding: 14px 18px; cursor: pointer; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: border-color 0.2s; }
+  .topic-item:hover { border-color: #ff7043; }
+
+  /* Modal overlay */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal { background: #fff; border-radius: 18px; padding: 26px; width: 100%; max-width: 460px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
+
+  /* Collapse header */
+  .collapse-header { background: linear-gradient(135deg,#ff7043,#ff8a65); padding: 14px 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+
+  /* Grid 2 col */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Scroll */
+  #app { max-width: 700px; margin: 0 auto; padding: 18px 14px; min-height: 100vh; }
+
+  /* Notice banner */
+  .notice { background: #fff8e1; border: 2px solid #ffb300; border-radius: 10px; padding: 10px 14px; font-size: 12px; color: #e65100; margin-bottom: 12px; }
+
+  /* AI disclaimer */
+  .disclaimer { background: #fce4ec; border-radius: 10px; padding: 10px 14px; font-size: 11px; color: #880e4f; line-height: 1.6; margin-top: 14px; }
+
+  @media (max-width: 500px) {
+    .g2 { grid-template-columns: 1fr; }
+    .nav-btn { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ── CONFIG ──
+const TOPICS = [
+  { id:1, emoji:"⚡", title:"원전 확대 vs 탈원전" },
+  { id:2, emoji:"🏭", title:"노후 원전 수명 연장" },
+  { id:3, emoji:"🔨", title:"신규 원전 건설" },
+  { id:4, emoji:"☢️", title:"핵폐기물 처리" },
+  { id:5, emoji:"🔬", title:"소형 모듈 원자로(SMR)" },
+  { id:6, emoji:"🌏", title:"원전 수출 정책" },
+];
+const STANCE_META = {
+  찬성: { color:"#e8f5e9", border:"#43a047", icon:"✅", bg:"#43a047" },
+  반대: { color:"#fce4ec", border:"#e91e63", icon:"❌", bg:"#e91e63" },
+  중립: { color:"#fff8e1", border:"#fb8c00", icon:"⚖️", bg:"#fb8c00" },
+};
+const EMOTION_META = {
+  희망: { color:"#e3f2fd", border:"#1e88e5", icon:"🌱", bg:"#1e88e5" },
+  두려움: { color:"#f3e5f5", border:"#8e24aa", icon:"😟", bg:"#8e24aa" },
+  중립: { color:"#f5f5f5", border:"#757575", icon:"😐", bg:"#757575" },
+  분노: { color:"#fff3e0", border:"#e64a19", icon:"😤", bg:"#e64a19" },
+  기대: { color:"#e8eaf6", border:"#5c6bc0", icon:"✨", bg:"#5c6bc0" },
+};
+const STANCES_LIST = [
+  { key:"pro",     label:"찬성 측 논점",    color:"#e8f5e9", border:"#4caf50", icon:"✅" },
+  { key:"con",     label:"반대 측 논점",    color:"#fce4ec", border:"#e91e63", icon:"❌" },
+  { key:"neutral", label:"중립·보완적 시각", color:"#fff8e1", border:"#ff9800", icon:"⚖️" },
+  { key:"missing", label:"놓치기 쉬운 관점", color:"#e8eaf6", border:"#5c6bc0", icon:"💡" },
+];
+const AUDIENCE = [
+  { key:"general", label:"일반 시민",       icon:"👥", desc:"다양한 연령·직군 혼합" },
+  { key:"local",   label:"원전 인근 주민",  icon:"🏘️", desc:"원전 반경 30km 거주자" },
+  { key:"youth",   label:"청년층(20~30대)", icon:"🧑", desc:"환경·기후 관심 높음" },
+  { key:"senior",  label:"노년층(60대+)",   icon:"👴", desc:"안전 우선 가치관" },
+  { key:"expert",  label:"전문가 집단",     icon:"🔬", desc:"과학·정책 종사자" },
+];
+const MSG_PRESETS = [
+  { label:"안전성 강조",    text:"우리나라 원자력 발전소는 세계 최고 수준의 안전 기준을 적용하며, 지난 40년간 단 한 건의 방사선 피해 사고도 발생하지 않았습니다." },
+  { label:"기후·탄소 프레임", text:"원자력은 태양광·풍력과 함께 탄소 배출이 거의 없는 청정 에너지입니다. 기후위기 대응을 위해 원자력의 역할이 더욱 중요해지고 있습니다." },
+  { label:"경제성 강조",    text:"원자력 발전은 LNG 대비 발전 단가가 3분의 1 수준으로, 전기요금 안정화와 산업 경쟁력 유지에 핵심적인 역할을 합니다." },
+  { label:"투명·소통 강조", text:"정부는 원전 운영의 모든 정보를 실시간으로 공개하고, 지역 주민이 의사결정에 직접 참여할 수 있는 공론화 절차를 보장합니다." },
+];
+const REACTION_META = {
+  수용:   { bg:"#43a047", icon:"👍" },
+  회의:   { bg:"#fb8c00", icon:"🤔" },
+  우려:   { bg:"#e91e63", icon:"😰" },
+  무관심: { bg:"#9e9e9e", icon:"😑" },
+};
+const RISK_COLOR = { 낮음:"#43a047", 보통:"#fb8c00", 높음:"#e91e63" };
+const STORAGE_KEY = "nf_sheets_url";
+const HISTORY_KEY = "nf_msg_history";
+
+// ── STATE ──
+const S = {
+  view: "citizen",        // citizen | safety | dashboard
+  showSettings: false,
+  sheetsUrl: "",
+  urlInput: "",
+  urlSaved: false,
+
+  // citizen
+  tbTopic: TOPICS[0],
+  tbOpinion: "",
+  tbResult: null,
+  tbLoading: false,
+  tbError: "",
+  tbOpen: true,
+  tbSaved: null,
+  step: "topic",          // topic | opinion | result
+  selTopic: null,
+  opinion: "",
+  debateResult: null,
+  debateLoading: false,
+  debateError: "",
+
+  // dashboard
+  opinions: [],
+  dashLoading: false,
+  dashError: "",
+
+  // safety lab
+  msgText: "",
+  msgBText: "",
+  audience: AUDIENCE[0],
+  msgResult: null,
+  msgBResult: null,
+  msgLoading: false,
+  msgError: "",
+  compareMode: false,
+  msgHistory: [],
+};
+
+// Init from localStorage
+try { const u = localStorage.getItem(STORAGE_KEY); if(u) { S.sheetsUrl = u; S.urlInput = u; } } catch(e){}
+try { const h = localStorage.getItem(HISTORY_KEY); if(h) S.msgHistory = JSON.parse(h); } catch(e){}
+
+// ── HELPERS ──
+const $ = id => document.getElementById(id);
+const el = (tag, attr={}, ...children) => {
+  const e = document.createElement(tag);
+  for(const [k,v] of Object.entries(attr)) {
+    if(k === "style" && typeof v === "object") Object.assign(e.style, v);
+    else if(k.startsWith("on")) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else e.setAttribute(k,v);
+  }
+  for(const c of children) {
+    if(c === null || c === undefined) continue;
+    e.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  return e;
+};
+const div = (attr,...c) => el("div",attr,...c);
+const btn = (attr,...c) => el("button",attr,...c);
+const p = (attr,...c) => el("p",attr,...c);
+const span = (attr,...c) => el("span",attr,...c);
+const txt = s => document.createTextNode(String(s));
+
+async function callAI(prompt, maxTokens=1000) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:maxTokens, messages:[{role:"user",content:prompt}] })
+  });
+  const data = await res.json();
+  const raw = (data.content||[]).map(i=>i.text||"").join("");
+  return JSON.parse(raw.replace(/```json|```/g,"").trim());
+}
+
+function sendToSheets(record) {
+  if(!S.sheetsUrl) return Promise.resolve("no-url");
+  return fetch(S.sheetsUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(record)})
+    .then(()=>"sent").catch(()=>"error");
+}
+async function loadFromSheets() {
+  if(!S.sheetsUrl){S.dashError="⚙️ 먼저 Google Sheets URL을 설정해 주세요.";render();return;}
+  S.dashLoading=true;S.dashError="";render();
+  try{const res=await fetch(S.sheetsUrl);const d=await res.json();S.opinions=Array.isArray(d)?d.reverse():[];}
+  catch{S.dashError="데이터를 불러오지 못했어요.";}
+  S.dashLoading=false;render();
+}
+
+// ── RENDER HELPERS ──
+function makeBar(label, value, total, color, icon) {
+  const pct = total ? Math.round(value/total*100) : 0;
+  return div({class:"bar-wrap"},
+    div({class:"bar-label"}, span({},icon+" "+label), span({style:{fontWeight:700}},value+"건 ("+pct+"%)") ),
+    div({class:"bar-track"}, div({class:"bar-fill",style:{width:pct+"%",background:color}}) )
+  );
+}
+function makeReactionBar(label, pct, color, icon) {
+  return div({class:"bar-wrap"},
+    div({class:"bar-label"},
+      span({style:{display:"flex",alignItems:"center",gap:"6px"}}, span({style:{fontSize:"16px"}},icon), el("strong",{},label)),
+      span({style:{fontWeight:800,color}},pct+"%")
+    ),
+    div({style:{background:"#f0ebe7",borderRadius:"8px",height:"12px",overflow:"hidden"}},
+      div({style:{width:pct+"%",background:color,height:"12px",borderRadius:"8px",transition:"width 0.9s"}})
+    )
+  );
+}
+function makeChips(items, activeKey, getKey, getLabel, onClick) {
+  const wrap = div({style:{display:"flex",flexWrap:"wrap",gap:"8px",marginBottom:"10px"}});
+  items.forEach(item => {
+    const isActive = getKey(item) === activeKey;
+    const b = btn({
+      class:"chip"+(isActive?" active":""),
+      onClick:()=>{ onClick(item); }
+    }, getLabel(item));
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+// ── SETTINGS MODAL ──
+function renderSettings() {
+  if(!S.showSettings) return null;
+  const modal = div({class:"overlay", onClick:e=>{ if(e.target===modal){S.showSettings=false;render();}}},
+    div({class:"modal"},
+      el("h2",{style:{fontSize:"17px",color:"#5d4037",marginBottom:"6px"}},"⚙️ Google Sheets 연동 설정"),
+      p({style:{fontSize:"13px",color:"#a1887f",lineHeight:"1.7",marginBottom:"14px"}},"Apps Script 배포 후 받은 웹 앱 URL을 입력해 주세요."),
+      el("textarea",{
+        class:"ta", rows:"3", placeholder:"https://script.google.com/macros/s/...",
+        value:S.urlInput,
+        onInput:e=>{S.urlInput=e.target.value;}
+      }),
+      div({style:{display:"flex",gap:"10px",marginTop:"14px"}},
+        btn({class:"btn-sec",style:{flex:"1"},onClick:()=>{S.showSettings=false;render();}},"취소"),
+        btn({
+          style:{flex:"2",padding:"11px",borderRadius:"10px",border:"none",background:S.urlSaved?"#43a047":"#ff7043",color:"#fff",fontWeight:"700",fontSize:"13px"},
+          onClick:()=>{
+            const t=S.urlInput.trim();if(!t)return;
+            localStorage.setItem(STORAGE_KEY,t);S.sheetsUrl=t;S.urlSaved=true;render();
+            setTimeout(()=>{S.urlSaved=false;S.showSettings=false;render();},1200);
+          }
+        }, S.urlSaved?"✅ 저장됨!":"저장")
+      )
+    )
+  );
+  return modal;
+}
+
+// ── NAV ──
+function renderNav() {
+  const tabs = [{key:"citizen",icon:"🏛️",label:"시민 공론장"},{key:"safety",icon:"🧪",label:"메시지 실험실"},{key:"dashboard",icon:"📊",label:"대시보드"}];
+  return div({class:"nav"},
+    ...tabs.map(t=>btn({class:"nav-btn"+(S.view===t.key?" active":""), onClick:()=>{S.view=t.key;if(t.key==="dashboard")loadFromSheets();else render();}},t.icon+" "+t.label)),
+    btn({class:"nav-settings",onClick:()=>{S.showSettings=true;render();}},"⚙️")
+  );
+}
+
+// ── CITIZEN VIEW ──
+function renderCitizen() {
+  const frag = document.createDocumentFragment();
+
+  // Opinion collection box
+  const box = div({style:{background:"#fff",borderRadius:"18px",boxShadow:"0 4px 20px rgba(0,0,0,0.09)",border:"2px solid #ffe0b2",overflow:"hidden",marginBottom:"24px"}});
+  const header = div({class:"collapse-header", onClick:()=>{S.tbOpen=!S.tbOpen;render();}},
+    div({style:{display:"flex",alignItems:"center",gap:"10px"}},
+      span({style:{fontSize:"22px"}},"🗳️"),
+      div({},
+        div({style:{color:"#fff",fontWeight:"700",fontSize:"15px"}},"의견 수렴함"),
+        div({style:{color:"#ffccbc",fontSize:"12px"}},"내 의견을 입력하면 AI가 즉시 분류 · Google Sheets에 저장")
+      )
+    ),
+    div({style:{display:"flex",alignItems:"center",gap:"10px"}},
+      btn({style:{background:"rgba(255,255,255,0.25)",border:"none",color:"#fff",borderRadius:"8px",padding:"4px 10px",fontWeight:"700"},
+        onClick:e=>{e.stopPropagation();S.showSettings=true;render();}},"⚙️"),
+      span({style:{color:"#fff",fontSize:"20px",transform:S.tbOpen?"rotate(180deg)":"rotate(0deg)"}},"⌄")
+    )
+  );
+  box.appendChild(header);
+
+  if(S.tbOpen) {
+    const body = div({style:{padding:"18px"}});
+    if(!S.sheetsUrl) body.appendChild(div({class:"notice"},"⚠️ Google Sheets URL이 설정되지 않았어요. 의견은 분석되지만 저장되지 않아요."));
+
+    // Topic chips
+    body.appendChild(el("label",{style:{fontSize:"12px",color:"#a1887f",fontWeight:"600",display:"block",marginBottom:"6px"}},"📌 주제 선택"));
+    body.appendChild(makeChips(TOPICS, S.tbTopic.id, t=>t.id, t=>t.emoji+" "+t.title, t=>{S.tbTopic=t;S.tbResult=null;S.tbSaved=null;render();}));
+
+    // Opinion input
+    body.appendChild(el("label",{style:{fontSize:"12px",color:"#a1887f",fontWeight:"600",display:"block",margin:"8px 0 6px"}},"✏️ 내 의견"));
+    const row = div({style:{display:"flex",gap:"8px"}});
+    const ta = el("textarea",{class:"ta",rows:"3",placeholder:"이 주제에 대한 생각을 자유롭게 적어보세요...",style:{flex:"1"},onInput:e=>{S.tbOpinion=e.target.value;}});
+    ta.value = S.tbOpinion;
+    row.appendChild(ta);
+    row.appendChild(btn({
+      style:{padding:"0 16px",borderRadius:"10px",border:"none",background:S.tbLoading?"#ffccbc":"#ff7043",color:"#fff",fontWeight:"700",fontSize:"13px",whiteSpace:"nowrap",alignSelf:"stretch"},
+      disabled:S.tbLoading,
+      onClick: async()=>{
+        if(!S.tbOpinion.trim()){S.tbError="의견을 입력해 주세요.";render();return;}
+        S.tbError="";S.tbLoading=true;S.tbResult=null;S.tbSaved=null;render();
+        try{
+          const r = await callAI(`당신은 시민 공론장 AI입니다. 주제: "${S.tbTopic.title}"\n시민 의견: "${S.tbOpinion}"\nJSON만 응답(마크다운 없이):\n{"stance":"찬성|반대|중립","stanceReason":"1문장","emotion":"희망|두려움|중립|분노|기대","emotionReason":"1문장","keywords":["k1","k2","k3"],"summary":"2문장 요약"}`,800);
+          S.tbResult=r;
+          S.tbSaved=await sendToSheets({topic:S.tbTopic.title,topicEmoji:S.tbTopic.emoji,opinion:S.tbOpinion,...r,ts:Date.now()});
+        }catch{S.tbError="분석 오류. 다시 시도해 주세요.";}
+        S.tbLoading=false;render();
+      }
+    },S.tbLoading?"분석 중...":"🔍 분류하기"));
+    body.appendChild(row);
+    if(S.tbError) body.appendChild(p({style:{color:"#e91e63",fontSize:"12px",marginTop:"6px"}},S.tbError));
+
+    // Result
+    if(S.tbResult) {
+      const sm=STANCE_META[S.tbResult.stance]||STANCE_META["중립"];
+      const em=EMOTION_META[S.tbResult.emotion]||EMOTION_META["중립"];
+      if(S.tbSaved==="sent") body.appendChild(div({style:{background:"#e8f5e9",border:"1px solid #a5d6a7",borderRadius:"8px",padding:"8px 14px",marginTop:"10px",fontSize:"12px",color:"#2e7d32",fontWeight:"600"}},"✅ Google Sheets로 전송했어요!"));
+      const g2=div({class:"g2",style:{marginTop:"12px"}});
+      g2.appendChild(div({style:{background:sm.color,border:`2px solid ${sm.border}44`,borderRadius:"12px",padding:"14px 16px"}},
+        div({style:{fontSize:"11px",color:sm.border,fontWeight:"700",marginBottom:"6px"}},"입장 분류"),
+        div({style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}},span({style:{fontSize:"22px"}},sm.icon),span({style:{fontWeight:"800",fontSize:"18px",color:sm.border}},S.tbResult.stance)),
+        p({style:{fontSize:"12px",color:"#5d4037",lineHeight:"1.6"}},S.tbResult.stanceReason)
+      ));
+      g2.appendChild(div({style:{background:em.color,border:`2px solid ${em.border}44`,borderRadius:"12px",padding:"14px 16px"}},
+        div({style:{fontSize:"11px",color:em.border,fontWeight:"700",marginBottom:"6px"}},"감정 분류"),
+        div({style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"8px"}},span({style:{fontSize:"22px"}},em.icon),span({style:{fontWeight:"800",fontSize:"18px",color:em.border}},S.tbResult.emotion)),
+        p({style:{fontSize:"12px",color:"#5d4037",lineHeight:"1.6"}},S.tbResult.emotionReason)
+      ));
+      body.appendChild(g2);
+      const kwBox=div({style:{background:"#f9f5f2",borderRadius:"10px",padding:"12px 14px",marginTop:"10px"}});
+      const kwRow=div({style:{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"8px"}});
+      (S.tbResult.keywords||[]).forEach(k=>kwRow.appendChild(span({class:"tag"},k)));
+      kwBox.appendChild(kwRow);
+      kwBox.appendChild(p({style:{fontSize:"12px",color:"#5d4037",lineHeight:"1.7"}},S.tbResult.summary));
+      body.appendChild(kwBox);
+    }
+    box.appendChild(body);
+  }
+  frag.appendChild(box);
+
+  // Steps
+  const steps = div({class:"steps"});
+  ["주제 선택","의견 작성","AI 분석"].forEach((s,i)=>{
+    const active=(S.step==="topic"&&i===0)||(S.step==="opinion"&&i===1)||(S.step==="result"&&i===2);
+    const done=(S.step==="opinion"&&i===0)||(S.step==="result"&&i<=1);
+    steps.appendChild(div({style:{display:"flex",alignItems:"center",gap:"6px"}},
+      div({class:"step-dot",style:{background:done?"#ff8a65":active?"#ff7043":"#e0d5cc"}},done?"✓":String(i+1)),
+      span({style:{fontSize:"12px",color:active?"#ff7043":"#a1887f",fontWeight:active?"700":"400"}},s),
+      ...(i<2?[div({class:"step-line",style:{background:done?"#ff8a65":"#e0d5cc"}})]:[])
+    ));
+  });
+  frag.appendChild(steps);
+
+  // Main content by step
+  if(S.step==="topic") {
+    const wrap=div({style:{maxWidth:"600px",margin:"0 auto"}});
+    wrap.appendChild(el("h2",{style:{fontSize:"15px",color:"#5d4037",marginBottom:"14px"}},"어떤 주제로 깊이 토론할까요?"));
+    TOPICS.forEach(t=>{
+      wrap.appendChild(div({class:"topic-item",onClick:()=>{S.selTopic=t;S.step="opinion";render();}},
+        span({style:{fontSize:"26px"}},t.emoji),
+        span({style:{fontWeight:"700",color:"#4e342e",fontSize:"14px"}},t.title),
+        span({style:{marginLeft:"auto",color:"#ff7043",fontSize:"18px"}},"›")
+      ));
+    });
+    frag.appendChild(wrap);
+  }
+
+  if(S.step==="opinion") {
+    const wrap=div({style:{maxWidth:"600px",margin:"0 auto"}});
+    wrap.appendChild(div({style:{background:"#fff3e0",borderRadius:"12px",padding:"12px 16px",marginBottom:"16px",display:"flex",gap:"10px",alignItems:"center"}},
+      span({style:{fontSize:"22px"}},S.selTopic.emoji),
+      span({style:{fontWeight:"700",color:"#bf360c",fontSize:"14px"}},S.selTopic.title)
+    ));
+    const ta2=el("textarea",{class:"ta",rows:"5",placeholder:"자유롭게 의견을 작성해 주세요.",style:{width:"100%"}},);
+    ta2.value=S.opinion;ta2.addEventListener("input",e=>{S.opinion=e.target.value;});
+    wrap.appendChild(ta2);
+    if(S.debateError) wrap.appendChild(p({style:{color:"#e91e63",fontSize:"13px",margin:"6px 0 0"}},S.debateError));
+    wrap.appendChild(div({style:{display:"flex",gap:"10px",marginTop:"12px"}},
+      btn({class:"btn-sec",style:{flex:"1"},onClick:()=>{S.step="topic";render();}},"← 주제 변경"),
+      btn({
+        style:{flex:"2",padding:"12px",borderRadius:"10px",border:"none",background:S.debateLoading?"#ffccbc":"#ff7043",color:"#fff",fontWeight:"700",fontSize:"14px"},
+        disabled:S.debateLoading,
+        onClick:async()=>{
+          if(!S.opinion.trim()){S.debateError="의견을 입력해 주세요.";render();return;}
+          S.debateError="";S.debateLoading=true;render();
+          try{
+            S.debateResult=await callAI(`당신은 민주적 공론장 AI입니다. 주제: "${S.selTopic.title}" 시민 의견: "${S.opinion}"\nJSON만 응답:{"summary":"요약 2~3문장","pro":["찬성 논점 3개"],"con":["반대 논점 3개"],"neutral":["중립 시각 2개"],"missing":["놓치기 쉬운 관점 2개"]}`);
+            S.step="result";
+          }catch{S.debateError="분석 오류.";}
+          S.debateLoading=false;render();
+        }
+      },S.debateLoading?"🤔 분석 중...":"🔍 AI 분석 시작")
+    ));
+    frag.appendChild(wrap);
+  }
+
+  if(S.step==="result"&&S.debateResult) {
+    const wrap=div({style:{maxWidth:"660px",margin:"0 auto"}});
+    wrap.appendChild(div({style:{background:"#fff3e0",borderRadius:"12px",padding:"12px 16px",marginBottom:"14px",display:"flex",gap:"10px",alignItems:"center"}},
+      span({style:{fontSize:"22px"}},S.selTopic.emoji),span({style:{fontWeight:"700",color:"#bf360c",fontSize:"14px"}},S.selTopic.title)
+    ));
+    wrap.appendChild(div({style:{background:"#fff",borderRadius:"14px",padding:"16px 18px",marginBottom:"12px",borderLeft:"4px solid #ff7043",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}},
+      div({style:{fontWeight:"700",color:"#5d4037",fontSize:"13px",marginBottom:"8px"}},"📋 내 의견 요약"),
+      p({style:{color:"#5d4037",fontSize:"13px",lineHeight:"1.8"}},S.debateResult.summary)
+    ));
+    STANCES_LIST.forEach(s=>{
+      const box2=div({style:{background:s.color,borderRadius:"14px",padding:"14px 18px",marginBottom:"10px",border:`2px solid ${s.border}33`}});
+      box2.appendChild(div({style:{fontWeight:"700",color:s.border,fontSize:"13px",marginBottom:"8px"}},s.icon+" "+s.label));
+      (S.debateResult[s.key]||[]).forEach(pt=>{
+        box2.appendChild(div({style:{display:"flex",gap:"8px",marginBottom:"6px"}},
+          span({style:{color:s.border,fontWeight:"700",fontSize:"12px"}},"•"),
+          p({style:{fontSize:"13px",color:"#4e342e",lineHeight:"1.8"}},pt)
+        ));
+      });
+      wrap.appendChild(box2);
+    });
+    wrap.appendChild(div({class:"disclaimer"},"🤖 이 분석은 특정 입장을 지지하지 않으며 민주적 대화를 위한 참고 자료입니다. AI 시뮬레이션 결과이며 실제 여론과 다를 수 있습니다."));
+    wrap.appendChild(btn({class:"btn-primary",onClick:()=>{S.step="topic";S.selTopic=null;S.opinion="";S.debateResult=null;render();}},"🔄 다른 주제로 대화하기"));
+    frag.appendChild(wrap);
+  }
+  return frag;
+}
+
+// ── SAFETY LAB VIEW ──
+function makeMsgResultCard(res, label) {
+  if(!res) return null;
+  const rc=res.reactions||{};
+  const trust=res.trustScore||0;
+  const rColor=RISK_COLOR[res.riskLevel]||"#757575";
+  const card=div({style:{background:"#fff",borderRadius:"16px",border:"2px solid #ffe0b2",overflow:"hidden",boxShadow:"0 3px 14px rgba(0,0,0,0.08)"}});
+  if(label) card.appendChild(div({style:{background:"linear-gradient(90deg,#ff7043,#ff8a65)",padding:"8px 18px",color:"#fff",fontWeight:"700",fontSize:"13px"}},label));
+  const body=div({style:{padding:"18px 20px"}});
+
+  // Trust score
+  const tBox=div({style:{display:"flex",alignItems:"center",gap:"14px",marginBottom:"16px",background:"#fff8f5",borderRadius:"12px",padding:"14px 16px"}});
+  tBox.appendChild(div({style:{textAlign:"center",minWidth:"56px"}},
+    div({style:{fontSize:"30px",fontWeight:"900",color:trust>=70?"#43a047":trust>=40?"#fb8c00":"#e91e63",lineHeight:"1"}},String(trust)),
+    div({style:{fontSize:"10px",color:"#a1887f",marginTop:"3px"}},"신뢰 점수")
+  ));
+  const tRight=div({style:{flex:"1"}});
+  tRight.appendChild(div({style:{background:"#f0ebe7",borderRadius:"8px",height:"10px",overflow:"hidden",marginBottom:"8px"}},
+    div({style:{width:trust+"%",background:trust>=70?"#43a047":trust>=40?"#fb8c00":"#e91e63",height:"10px",borderRadius:"8px",transition:"width 1s"}})
+  ));
+  tRight.appendChild(p({style:{fontSize:"12px",color:"#5d4037",lineHeight:"1.6"}},res.reactionSummary));
+  tBox.appendChild(tRight);
+  body.appendChild(tBox);
+
+  // Disclaimer
+  body.appendChild(div({style:{background:"#fff8e1",border:"1px solid #ffb300",borderRadius:"8px",padding:"8px 12px",marginBottom:"14px",fontSize:"11px",color:"#6d4c00",lineHeight:"1.6"}},
+    "⚠️ 아래 수치는 AI의 언어 패턴 기반 추정값입니다. 실제 여론조사 데이터가 아니며 정책 결정의 단독 근거로 사용하지 마세요."
+  ));
+
+  // Reactions
+  const rWrap=div({style:{marginBottom:"14px"}});
+  rWrap.appendChild(div({style:{fontWeight:"700",color:"#5d4037",fontSize:"12px",marginBottom:"10px"}},"📊 반응 분포 예측 (AI 시뮬레이션)"));
+  Object.entries(REACTION_META).forEach(([k,v])=>rWrap.appendChild(makeReactionBar(k,rc[k]||0,v.bg,v.icon)));
+  body.appendChild(rWrap);
+
+  // Risk
+  body.appendChild(div({style:{display:"flex",alignItems:"flex-start",gap:"8px",background:`${rColor}11`,border:`1.5px solid ${rColor}55`,borderRadius:"10px",padding:"9px 13px",marginBottom:"14px"}},
+    span({style:{fontWeight:"800",color:rColor,fontSize:"12px",whiteSpace:"nowrap"}},"⚠️ 역반응 위험: "+res.riskLevel),
+    span({style:{fontSize:"12px",color:"#5d4037",lineHeight:"1.5"}},res.riskReason)
+  ));
+
+  // Positives & Concerns
+  const g2=div({class:"g2",style:{marginBottom:"12px"}});
+  const posBox=div({style:{background:"#e8f5e9",borderRadius:"10px",padding:"12px 14px"}});
+  posBox.appendChild(div({style:{fontWeight:"700",color:"#43a047",fontSize:"12px",marginBottom:"8px"}},"✅ 메시지 강점"));
+  (res.positives||[]).forEach(t=>posBox.appendChild(p({style:{fontSize:"12px",color:"#2e7d32",lineHeight:"1.6",marginBottom:"4px"}},"• "+t)));
+  const conBox=div({style:{background:"#fce4ec",borderRadius:"10px",padding:"12px 14px"}});
+  conBox.appendChild(div({style:{fontWeight:"700",color:"#e91e63",fontSize:"12px",marginBottom:"8px"}},"⚡ 주요 우려사항"));
+  (res.topConcerns||[]).forEach(t=>conBox.appendChild(p({style:{fontSize:"12px",color:"#c62828",lineHeight:"1.6",marginBottom:"4px"}},"• "+t)));
+  g2.appendChild(posBox);g2.appendChild(conBox);
+  body.appendChild(g2);
+
+  // Improvements
+  const impBox=div({style:{background:"#e8eaf6",borderRadius:"10px",padding:"12px 14px"}});
+  impBox.appendChild(div({style:{fontWeight:"700",color:"#5c6bc0",fontSize:"12px",marginBottom:"8px"}},"💡 개선 제안"));
+  (res.improvements||[]).forEach((t,i)=>impBox.appendChild(div({style:{display:"flex",gap:"8px",marginBottom:"6px"}},
+    span({style:{color:"#5c6bc0",fontWeight:"800",fontSize:"12px",flexShrink:"0"}},String(i+1)+"."),
+    p({style:{fontSize:"12px",color:"#283593",lineHeight:"1.6"}},t)
+  )));
+  body.appendChild(impBox);
+  card.appendChild(body);
+  return card;
+}
+
+function renderSafety() {
+  const frag=document.createDocumentFragment();
+
+  // Header
+  frag.appendChild(div({style:{textAlign:"center",marginBottom:"20px"}},
+    div({style:{fontSize:"36px",marginBottom:"6px"}},"🧪"),
+    el("h1",{style:{fontSize:"20px",color:"#5d4037",fontWeight:"800"}},"안전 메시지 실험실"),
+    p({style:{color:"#8d6e63",fontSize:"13px",marginTop:"6px"}},"AI로 공중 반응을 예측하고 메시지 효과를 사전 검증하세요")
+  ));
+
+  // AI disclaimer banner
+  frag.appendChild(div({style:{background:"#fff3e0",border:"2px solid #ff9800",borderRadius:"12px",padding:"12px 16px",marginBottom:"16px",fontSize:"12px",color:"#4e342e",lineHeight:"1.7"}},
+    "📌 이 기능은 AI(Claude)가 학습 데이터를 기반으로 반응을 ",el("strong",{},"추정"),
+    "하는 시뮬레이션입니다. 실제 여론조사·설문과는 다르며, 결과의 숫자(예: 수용 60%)는 ",
+    el("strong",{},"통계적으로 검증된 수치가 아닙니다."),
+    " 메시지 방향성을 탐색하는 참고 도구로만 활용해 주세요."
+  ));
+
+  // Mode toggle
+  const modeWrap=div({style:{display:"flex",background:"#fff",borderRadius:"12px",padding:"4px",border:"2px solid #ffe0b2",marginBottom:"16px",maxWidth:"280px"}});
+  [{v:false,label:"단일 분석"},{v:true,label:"⚖️ A/B 비교"}].forEach(m=>{
+    modeWrap.appendChild(btn({
+      style:{flex:"1",padding:"8px",borderRadius:"9px",border:"none",background:S.compareMode===m.v?"#ff7043":"transparent",color:S.compareMode===m.v?"#fff":"#a1887f",fontWeight:S.compareMode===m.v?"700":"500",fontSize:"13px"},
+      onClick:()=>{S.compareMode=m.v;S.msgResult=null;S.msgBResult=null;S.msgError="";render();}
+    },m.label));
+  });
+  frag.appendChild(modeWrap);
+
+  // Audience
+  const audCard=div({class:"card"});
+  audCard.appendChild(div({class:"card-title"},"👥 대상 집단"));
+  audCard.appendChild(makeChips(AUDIENCE,S.audience.key,a=>a.key,a=>a.icon+" "+a.label,a=>{S.audience=a;render();}));
+  audCard.appendChild(p({style:{fontSize:"12px",color:"#a1887f"}},"📌 "+S.audience.desc));
+  frag.appendChild(audCard);
+
+  // Input card
+  const inCard=div({class:"card"});
+  inCard.appendChild(div({class:"card-title"},S.compareMode?"✍️ 메시지 A":"✍️ 안전 메시지 입력"));
+
+  const addPresets=(target,setter)=>{
+    const row=div({style:{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"10px"}});
+    MSG_PRESETS.forEach(pr=>row.appendChild(btn({style:{padding:"4px 10px",borderRadius:"14px",border:"1.5px solid #f5e6dc",background:"#fffaf6",color:"#8d6e63",fontSize:"11px"},onClick:()=>{setter(pr.text);render();}},pr.label)));
+    target.appendChild(row);
+  };
+  addPresets(inCard,v=>{S.msgText=v;S.msgResult=null;});
+  const ta1=el("textarea",{class:"ta",rows:"4",placeholder:"실험할 안전 메시지를 입력하세요...",style:{width:"100%"}});
+  ta1.value=S.msgText;ta1.addEventListener("input",e=>{S.msgText=e.target.value;S.msgResult=null;});
+  inCard.appendChild(ta1);
+
+  if(S.compareMode) {
+    inCard.appendChild(div({class:"card-title",style:{marginTop:"16px"}},"✍️ 메시지 B"));
+    addPresets(inCard,v=>{S.msgBText=v;S.msgBResult=null;});
+    const ta2=el("textarea",{class:"ta",rows:"4",placeholder:"비교할 다른 메시지를 입력하세요...",style:{width:"100%"}});
+    ta2.value=S.msgBText;ta2.addEventListener("input",e=>{S.msgBText=e.target.value;S.msgBResult=null;});
+    inCard.appendChild(ta2);
+  }
+
+  if(S.msgError) inCard.appendChild(p({style:{color:"#e91e63",fontSize:"12px",marginTop:"8px"}},S.msgError));
+  inCard.appendChild(btn({
+    class:"btn-primary",disabled:S.msgLoading,
+    onClick:async()=>{
+      if(S.compareMode&&(!S.msgText.trim()||!S.msgBText.trim())){S.msgError="두 메시지를 모두 입력해 주세요.";render();return;}
+      if(!S.compareMode&&!S.msgText.trim()){S.msgError="메시지를 입력해 주세요.";render();return;}
+      S.msgError="";S.msgLoading=true;S.msgResult=null;S.msgBResult=null;render();
+      const prompt=txt=>`당신은 원자력 정책 커뮤니케이션 전문가 AI입니다.\n대상 집단: "${S.audience.label}" (${S.audience.desc})\n안전 메시지: "${txt}"\n이 집단의 반응을 시뮬레이션하세요.\nJSON만 반환(마크다운 없이):\n{"reactions":{"수용":정수,"회의":정수,"우려":정수,"무관심":정수},"trustScore":0~100정수,"topConcerns":["우려 3개"],"positives":["강점 2개"],"improvements":["개선안 3개"],"reactionSummary":"2문장","riskLevel":"낮음|보통|높음","riskReason":"1문장"}\nreactions 합계=100`;
+      try{
+        if(S.compareMode){
+          const [rA,rB]=await Promise.all([callAI(prompt(S.msgText)),callAI(prompt(S.msgBText))]);
+          S.msgResult=rA;S.msgBResult=rB;
+        } else {
+          S.msgResult=await callAI(prompt(S.msgText));
+          const entry={text:S.msgText,audience:S.audience.key,audienceLabel:S.audience.label,audienceIcon:S.audience.icon,result:S.msgResult,ts:Date.now()};
+          S.msgHistory=[entry,...S.msgHistory].slice(0,10);
+          try{localStorage.setItem(HISTORY_KEY,JSON.stringify(S.msgHistory));}catch(e){}
+        }
+      }catch{S.msgError="분석 오류. 다시 시도해 주세요.";}
+      S.msgLoading=false;render();
+    }
+  },S.msgLoading?"🔬 반응 시뮬레이션 중...":(S.compareMode?"🔬 A/B 비교 분석":"🔬 공중 반응 예측 분석")));
+  frag.appendChild(inCard);
+
+  // Results
+  if(!S.compareMode&&S.msgResult) frag.appendChild(makeMsgResultCard(S.msgResult,null));
+
+  if(S.compareMode&&(S.msgResult||S.msgBResult)) {
+    if(S.msgResult&&S.msgBResult) {
+      const cmp=div({class:"card"});
+      cmp.appendChild(div({class:"card-title"},"🏆 A/B 비교 요약"));
+      const g=div({class:"g2",style:{marginBottom:"12px"}});
+      [{label:"메시지 A",res:S.msgResult},{label:"메시지 B",res:S.msgBResult}].forEach(({label,res})=>{
+        g.appendChild(div({style:{textAlign:"center",background:"#fff8f5",borderRadius:"10px",padding:"14px 10px"}},
+          div({style:{fontSize:"12px",color:"#a1887f",marginBottom:"4px"}},label),
+          div({style:{fontSize:"32px",fontWeight:"900",color:res.trustScore>=70?"#43a047":res.trustScore>=40?"#fb8c00":"#e91e63"}},String(res.trustScore)),
+          div({style:{fontSize:"11px",color:"#8d6e63"}},"신뢰 점수"),
+          div({style:{marginTop:"6px",fontSize:"12px",color:RISK_COLOR[res.riskLevel],fontWeight:"700"}},"위험도 "+res.riskLevel)
+        ));
+      });
+      cmp.appendChild(g);
+      const diff=S.msgResult.trustScore-S.msgBResult.trustScore;
+      cmp.appendChild(div({style:{background:"#fff3e0",borderRadius:"8px",padding:"10px 14px",fontSize:"12px",color:"#5d4037",lineHeight:"1.7"}},
+        diff>0?`✅ 메시지 A가 ${diff}점 더 높습니다.`:diff<0?`✅ 메시지 B가 ${Math.abs(diff)}점 더 높습니다.`:"두 메시지의 점수가 동일합니다."
+      ));
+      frag.appendChild(cmp);
+      const g2r=div({class:"g2"});
+      g2r.appendChild(makeMsgResultCard(S.msgResult,"메시지 A"));
+      g2r.appendChild(makeMsgResultCard(S.msgBResult,"메시지 B"));
+      frag.appendChild(g2r);
+    } else {
+      if(S.msgResult) frag.appendChild(makeMsgResultCard(S.msgResult,"메시지 A"));
+      if(S.msgBResult) frag.appendChild(makeMsgResultCard(S.msgBResult,"메시지 B"));
+    }
+  }
+
+  // History
+  if(S.msgHistory.length>0) {
+    const hCard=div({class:"card",style:{marginTop:"16px"}});
+    hCard.appendChild(div({class:"card-title"},"🕐 최근 실험 기록"));
+    S.msgHistory.slice(0,5).forEach((h,i)=>{
+      const trust=h.result?.trustScore||0;
+      const row=div({style:{borderBottom:i<Math.min(S.msgHistory.length,5)-1?"1px solid #f5ece6":"none",paddingBottom:"10px",marginBottom:"10px"}});
+      row.appendChild(div({style:{display:"flex",alignItems:"center",gap:"8px",marginBottom:"5px"}},
+        span({style:{fontSize:"12px",background:"#fff3e0",color:"#bf360c",borderRadius:"8px",padding:"2px 8px",fontWeight:"600"}},(h.audienceIcon||"")+" "+h.audienceLabel),
+        span({style:{fontSize:"12px",fontWeight:"800",color:trust>=70?"#43a047":trust>=40?"#fb8c00":"#e91e63"}},"신뢰 "+trust+"점"),
+        span({style:{marginLeft:"auto",fontSize:"11px",color:"#bbb"}},new Date(h.ts).toLocaleDateString("ko-KR"))
+      ));
+      row.appendChild(p({style:{fontSize:"12px",color:"#5d4037",lineHeight:"1.6"}},'"'+h.text.slice(0,80)+(h.text.length>80?"...":"")+'"'));
+      hCard.appendChild(row);
+    });
+    frag.appendChild(hCard);
+  }
+  return frag;
+}
+
+// ── DASHBOARD VIEW ──
+function renderDashboard() {
+  const frag=document.createDocumentFragment();
+  frag.appendChild(div({style:{marginBottom:"20px"}},
+    el("h1",{style:{fontSize:"20px",color:"#3e2723",fontWeight:"800"}},"📊 운영자 대시보드"),
+    p({style:{fontSize:"13px",color:"#8d6e63",marginTop:"4px"}},"Google Sheets 수집 데이터 현황")
+  ));
+  if(S.dashError) frag.appendChild(div({style:{background:"#fff3e0",border:"2px solid #ff9800",borderRadius:"12px",padding:"14px 18px",marginBottom:"16px",color:"#e65100",fontSize:"13px"}},S.dashError));
+  if(S.dashLoading){frag.appendChild(p({style:{textAlign:"center",padding:"60px",color:"#a1887f"}},"데이터 불러오는 중..."));return frag;}
+  if(!S.sheetsUrl){
+    frag.appendChild(div({style:{textAlign:"center",padding:"60px"}},
+      div({style:{fontSize:"40px",marginBottom:"12px"}},"⚙️"),
+      p({style:{color:"#a1887f",marginBottom:"14px"}},"Google Sheets URL을 먼저 설정해 주세요."),
+      btn({class:"btn-primary",style:{maxWidth:"200px"},onClick:()=>{S.showSettings=true;render();}},"URL 설정하기")
+    ));
+    return frag;
+  }
+  if(S.opinions.length===0){frag.appendChild(div({style:{textAlign:"center",padding:"60px",color:"#a1887f"}},div({style:{fontSize:"40px",marginBottom:"12px"}},"📭"),p({},"아직 수집된 의견이 없어요.")));return frag;}
+
+  const tot=S.opinions.length;
+  const sc=S.opinions.reduce((a,x)=>{a[x.stance]=(a[x.stance]||0)+1;return a;},{});
+  const ec=S.opinions.reduce((a,x)=>{a[x.emotion]=(a[x.emotion]||0)+1;return a;},{});
+  const tc=S.opinions.reduce((a,x)=>{a[x.topic]=(a[x.topic]||0)+1;return a;},{});
+  const kwm=S.opinions.flatMap(o=>o.keywords||[]).reduce((a,k)=>{a[k]=(a[k]||0)+1;return a;},{});
+  const topKw=Object.entries(kwm).sort((a,b)=>b[1]-a[1]).slice(0,12);
+
+  // Summary cards
+  const g3=div({style:{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px",marginBottom:"16px"}});
+  [{label:"총 수집 의견",value:tot+"건",icon:"🗳️",color:"#fff3e0",border:"#ff7043"},
+   {label:"가장 많은 입장",value:Object.entries(sc).sort((a,b)=>b[1]-a[1])[0]?.[0]||"-",icon:"📌",color:"#e8f5e9",border:"#43a047"},
+   {label:"가장 많은 감정",value:Object.entries(ec).sort((a,b)=>b[1]-a[1])[0]?.[0]||"-",icon:"💬",color:"#e3f2fd",border:"#1e88e5"}
+  ].forEach(c=>g3.appendChild(div({style:{background:c.color,border:`2px solid ${c.border}44`,borderRadius:"14px",padding:"14px 16px"}},
+    div({style:{fontSize:"20px",marginBottom:"4px"}},c.icon),
+    div({style:{fontSize:"20px",fontWeight:"800",color:c.border}},c.value),
+    div({style:{fontSize:"11px",color:"#8d6e63",marginTop:"2px"}},c.label)
+  )));
+  frag.appendChild(g3);
+
+  // Stance & emotion bars
+  const g2=div({class:"g2",style:{marginBottom:"14px"}});
+  const sBox=div({style:{background:"#fff",borderRadius:"14px",padding:"16px 18px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}});
+  sBox.appendChild(div({class:"card-title"},"📌 입장 분포"));
+  Object.entries(STANCE_META).forEach(([k,v])=>sBox.appendChild(makeBar(k,sc[k]||0,tot,v.bg,v.icon)));
+  const eBox=div({style:{background:"#fff",borderRadius:"14px",padding:"16px 18px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}});
+  eBox.appendChild(div({class:"card-title"},"💬 감정 분포"));
+  Object.entries(EMOTION_META).forEach(([k,v])=>eBox.appendChild(makeBar(k,ec[k]||0,tot,v.bg,v.icon)));
+  g2.appendChild(sBox);g2.appendChild(eBox);
+  frag.appendChild(g2);
+
+  // Topic bars
+  const tBox=div({style:{background:"#fff",borderRadius:"14px",padding:"16px 18px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)",marginBottom:"14px"}});
+  tBox.appendChild(div({class:"card-title"},"🏷️ 주제별 의견 수"));
+  TOPICS.forEach(t=>tBox.appendChild(makeBar(t.title,tc[t.title]||0,tot,"#ff7043",t.emoji)));
+  frag.appendChild(tBox);
+
+  // Keywords
+  if(topKw.length>0){
+    const kwBox=div({style:{background:"#fff",borderRadius:"14px",padding:"16px 18px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)",marginBottom:"14px"}});
+    kwBox.appendChild(div({class:"card-title"},"🔑 자주 등장한 키워드"));
+    const kwRow=div({style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+    topKw.forEach(([k,n])=>kwRow.appendChild(span({class:"tag-outline"},k+" "+n)));
+    kwBox.appendChild(kwRow);
+    frag.appendChild(kwBox);
+  }
+
+  // Recent opinions
+  const rBox=div({style:{background:"#fff",borderRadius:"14px",padding:"16px 18px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}});
+  rBox.appendChild(div({class:"card-title"},"🕐 최근 수집된 의견"));
+  S.opinions.slice(0,12).forEach((o,i)=>{
+    const sm2=STANCE_META[o.stance]||STANCE_META["중립"];
+    const em2=EMOTION_META[o.emotion]||EMOTION_META["중립"];
+    const row=div({style:{borderBottom:i<11?"1px solid #f5ece6":"none",paddingBottom:"12px",marginBottom:"12px"}});
+    row.appendChild(div({style:{display:"flex",alignItems:"center",gap:"6px",marginBottom:"6px",flexWrap:"wrap"}},
+      span({style:{fontSize:"13px"}},o.topicEmoji||""),
+      span({style:{fontSize:"12px",fontWeight:"700",color:"#8d6e63"}},o.topic||""),
+      span({style:{background:sm2.color,color:sm2.border,border:`1px solid ${sm2.border}44`,borderRadius:"10px",padding:"2px 8px",fontSize:"11px",fontWeight:"700"}},sm2.icon+" "+(o.stance||"")),
+      span({style:{background:em2.color,color:em2.border,border:`1px solid ${em2.border}44`,borderRadius:"10px",padding:"2px 8px",fontSize:"11px",fontWeight:"700"}},em2.icon+" "+(o.emotion||"")),
+      span({style:{marginLeft:"auto",fontSize:"11px",color:"#bbb"}},o.ts?new Date(o.ts).toLocaleDateString("ko-KR"):"")
+    ));
+    const opTxt=String(o.opinion||"");
+    row.appendChild(p({style:{fontSize:"12px",color:"#4e342e",lineHeight:"1.7",marginBottom:"4px"}},'"'+opTxt.slice(0,120)+(opTxt.length>120?"...":"")+'"'));
+    if(o.summary) row.appendChild(p({style:{fontSize:"11px",color:"#a1887f",lineHeight:"1.6"}},"AI 요약: "+o.summary));
+    if((o.keywords||[]).length>0){
+      const kwr=div({style:{display:"flex",gap:"4px",marginTop:"6px",flexWrap:"wrap"}});
+      o.keywords.forEach(k=>kwr.appendChild(span({class:"tag",style:{fontSize:"10px"}},k)));
+      row.appendChild(kwr);
+    }
+    rBox.appendChild(row);
+  });
+  frag.appendChild(rBox);
+  return frag;
+}
+
+// ── MAIN RENDER ──
+function render() {
+  const app=$("app");
+  app.innerHTML="";
+
+  const settings=renderSettings();
+  if(settings) app.appendChild(settings);
+
+  const wrap=div({id:"inner"});
+  wrap.appendChild(renderNav());
+
+  if(S.view==="citizen")   wrap.appendChild(renderCitizen());
+  else if(S.view==="safety")    wrap.appendChild(renderSafety());
+  else if(S.view==="dashboard") wrap.appendChild(renderDashboard());
+
+  app.appendChild(wrap);
+}
+
+render();
+</script>
+</body>
+</html>
