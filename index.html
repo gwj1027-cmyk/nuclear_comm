@@ -191,6 +191,7 @@ const el = (tag, attr={}, ...children) => {
   for(const [k,v] of Object.entries(attr)) {
     if(k === "style" && typeof v === "object") Object.assign(e.style, v);
     else if(k.startsWith("on")) e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if(k === "disabled") { if(v) e.setAttribute("disabled",""); else e.removeAttribute("disabled"); }
     else e.setAttribute(k,v);
   }
   for(const c of children) {
